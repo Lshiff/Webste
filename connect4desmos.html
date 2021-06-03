@@ -292,10 +292,9 @@ function checkTie() {
 }
 
 function turn(num) {
-	console.log(checkTie())
 	if (checkTie() == true) {
 		console.log("checktie is", checkTie())
-		// alert("It's a tieddddd!"
+		alert("It's a tie!")
 	}
 	if (move(num) == false) {
 		alert("Can't go there!")
@@ -304,7 +303,7 @@ function turn(num) {
 	win = checkWin(board[7].turn)
 	//console.log(win)
 	if (win == false) {
-		if (checkTie) {alert("It's a tie!")}
+		if (checkTie()) {alert("It's a tie!")}
 		//changes turn
 		if (board[7].turn == 1) {
 			board[7].turn = 2
@@ -389,12 +388,16 @@ function computerMove() {
 		}
 	}
 	if (board[random].includes(0)) {
+		console.log("It's gucci")
 		return random
 	}
 	else {
+		console.log("working on it")
 		while (!board[random].includes(0)) {
 			random = Math.floor(Math.random() *	7)
 		}
+		console.log("lets try", random)
+		return random
 	}
 }
 
