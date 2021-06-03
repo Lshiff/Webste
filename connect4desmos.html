@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Connect 4</title>
+	<style>
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+		}
+		#calculator {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://www.desmos.com/api/v1.5/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+</head>
+<body>
+  <div id="calculator"></div>
+  <script >
+
+
+var testopts = {
+	'settingsMenu': true,
+	'expressions': true,
+	'zoomButtons': true,
+	'lockViewport': false,
+	'showGrid': false,
+	'showXAxis': false,
+	'showYAxis': false,
+};
+
+var opts = {
+	'settingsMenu': true,
+	'expressions': false,
+	'zoomButtons': true,
+	'lockViewport': false,
+	'showGrid': false,
+	'showXAxis': false,
+	'showYAxis': false,
+	'showResetButtonOnGraphpaper': true,
+	'pointsOfInterest': false,
+	'trace': false,
+	'invertedColors': false,
+};
+
+
+var elt = document.getElementById('calculator');
+var calculator = Desmos.GraphingCalculator(elt, opts);
+// calculator.setMathBounds({ //sets the camera position
+
+// 	left: -132,
+// 	right: 132,
+// 	bottom: -62,
+// 	top: 62
+// })
+var blue = "#2d70b3"
+var red = "#c74440"
+var colors = ["#c74440","#2d70b3"]
+var black = "#000000"
+
+var graph = [
+	['y=60', '-60<x<60'],
+	['y=-60', '-60<x<60'],
+	['x=60', '-60<y<60'],
+	['x=-060', '-60<y<60'],
+    
+
+]
+
+var labels = [-6, -4, -2, 0, 2, 4, 6]
+
+for (var i = -7; i<9; i+=2) {
+    graph.push([`x=${i}`, '-6<y<6', blue])
+}
+
+for (var i = -6; i<7; i+=2) {
+    graph.push([`y=${i}`, '-7<x<7', blue])
+}
+
+function graphDecorations() {
+	var color;
+	for (var i = 0; i<graph.length; i++) {
+        //console.log("currently setting expression", graph[i])
+		calculator.setExpression({
+			latex: `${graph[i][0]}\\{${graph[i][1]}\\}`,
+			color: graph[i][2]
+		})
+	}
+	for (var i = 0; i < 7; i++) {
+		//console.log(i)
+		calculator.setExpression({
+			latex: `(${labels[i]}, -6.5)`,
+			label: `${i+1}`,
+			color: black,
+			hidden: true,
+			showLabel: true
+		})
+	}
+}
+
+var board = [[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], {turn: 1, count: 0}]
+var gameOver = false
+var computerGame = true
+
+function move(num) {
+	for (var i = 0; i<=6; i++) {
+		if (board[num][i] == 0) { //If space empty
+			board[num][i] = board[7].turn 
+			board[7].count += 1 //Increments turn count
+			placePiece(num, i)
+			break
+		}
+	}
+}
+
+function placePiece(column, row) {
+	var xs = [-6, -4, -2, 0, 2, 4, 6]
+	var ys = [-5, -3, -1, 1, 3, 5]
+	var x = xs[column]
+	var y = ys[row]
+	if (computerGame && board[7].turn == 2) {
+		setTimeout(() => calculator.setExpression({id: `piece${board[7].count}`, latex: `(x-${x})^2+(y-${y})^2<=0.8`, color: blue}), 500)
+	}
+	else {
+		calculator.setExpression({id: `piece${board[7].count}`, latex: `(x-${x})^2+(y-${y})^2<=0.8`, color: colors[board[7].turn-1]})
+	}
+}
+
+
+function checkWin(player) {
+	for (var column = 0; column < 7; column++) {
+		for (var piece = 0; piece < 3; piece++) {
+			for (var add = 0; add < 4; add++) {
+				if (board[column][piece+add] != player) {
+					break
+				}
+				if (add == 3) {return {column: column, piece: piece, type: "vertical"}}
+			}
+		}
+	}
+	for (var row = 0; row < 6; row++) {
+		for (var piece = 0; piece < 4; piece++) {
+			for (var add = 0; add < 4; add++) {
+				if (board[piece+add][row] != player) {
+					break
+				}
+				if (add == 3) {
+					return {row: row, piece: piece, type: "horizontal"}
+				}
+			}
+		}
+	}
+	const pieces = [0, 1, 2, 2, 1, 0]
+	const ys = [0, 0, 0, 0, 1, 2]
+	const diags = [3, 4, 5, 6, 6, 6]
+	const diags1 = [3, 2, 1, 0, 0, 0]
+	let count = 0
+	//console.log("checking...")
+	for (var diag = 0; diag < 6; diag++) {
+		for (var piece = 0; piece <= pieces[diag]; piece++) {
+			for (var add = 0; add < 4; add++) {
+				//console.log(diags[diag]-piece-add, ys[diag]+add+piece )
+				//console.log(diags[diag]-piece-add, ys[diag]+add+piece, board[diags[diag]-piece-add][ys[diag]+add+piece] )
+				count ++
+				if (board[diags[diag]-piece-add][ys[diag]+add+piece] != player) {
+					break
+				}
+				if (add == 3) {
+					return {column: diag+3, row: ys[diag], type: "diagonal1"}
+				}
+			}
+		}
+	}
+	//console.log("diag2")
+	for (var diag = 0; diag < 6; diag++) {
+		for (var piece = 0; piece <= pieces[diag]; piece++) {
+			for (var add = 0; add < 4; add++) {
+				//console.log("Diag:", diag, "Piece:", piece, "Add:", add)
+				//console.log(diags1[diag]+piece+add, ys[diag]+add+piece, board[diags1[diag]+piece+add][ys[diag]+add+piece] )
+				count ++
+				if (board[diags1[diag]+piece+add][ys[diag]+add+piece] != player) {
+					break
+				}
+				if (add == 3) {
+					return {column: diag+3, row: ys[diag], type: "diagonal1"}
+				}
+			}
+		}
+	}
+	return false
+}
+
+function checkSim(player, simboard) {
+	for (var column = 0; column < 7; column++) {
+		for (var piece = 0; piece < 3; piece++) {
+			for (var add = 0; add < 4; add++) {
+				if (simboard[column][piece+add] != player) {
+					break
+				}
+				if (add == 3) {return {column: column, piece: piece, type: "vertical"}}
+			}
+		}
+	}
+	for (var row = 0; row < 6; row++) {
+		for (var piece = 0; piece < 4; piece++) {
+			for (var add = 0; add < 4; add++) {
+				if (simboard[piece+add][row] != player) {
+					break
+				}
+				if (add == 3) {
+					return {row: row, piece: piece, type: "horizontal"}
+				}
+			}
+		}
+	}
+	const pieces = [0, 1, 2, 2, 1, 0]
+	const ys = [0, 0, 0, 0, 1, 2]
+	const diags = [3, 4, 5, 6, 6, 6]
+	const diags1 = [3, 2, 1, 0, 0, 0]
+	let count = 0
+	//console.log("checking...")
+	for (var diag = 0; diag < 6; diag++) {
+		for (var piece = 0; piece <= pieces[diag]; piece++) {
+			for (var add = 0; add < 4; add++) {
+				//console.log(diags[diag]-piece-add, ys[diag]+add+piece )
+				//console.log(diags[diag]-piece-add, ys[diag]+add+piece, simboard[diags[diag]-piece-add][ys[diag]+add+piece] )
+				count ++
+				if (simboard[diags[diag]-piece-add][ys[diag]+add+piece] != player) {
+					break
+				}
+				if (add == 3) {
+					return {column: diag+3, row: ys[diag], type: "diagonal1"}
+				}
+			}
+		}
+	}
+	//console.log("diag2")
+	for (var diag = 0; diag < 6; diag++) {
+		for (var piece = 0; piece <= pieces[diag]; piece++) {
+			for (var add = 0; add < 4; add++) {
+				//console.log("Diag:", diag, "Piece:", piece, "Add:", add)
+				//console.log(diags1[diag]+piece+add, ys[diag]+add+piece, simboard[diags1[diag]+piece+add][ys[diag]+add+piece] )
+				count ++
+				if (simboard[diags1[diag]+piece+add][ys[diag]+add+piece] != player) {
+					break
+				}
+				if (add == 3) {
+					return {column: diag+3, row: ys[diag], type: "diagonal1"}
+				}
+			}
+		}
+	}
+	return false
+}
+
+function moveSim(num, input, player) {
+	for (var i = 0; i<=6; i++) {
+		if (input[num][i] == 0) { //If space empty
+			input[num][i] = player
+			return input
+		}
+	}
+	return false
+}
+
+function turn(num) {
+	move(num)
+	win = checkWin(board[7].turn)
+	//console.log(win)
+	if (win == false) {
+		//changes turn
+		if (board[7].turn == 1) {
+			board[7].turn = 2
+			compturn()
+			return
+			// if (computerGame) {
+			// 	// gameOver = true
+			// 	console.log("from turn", board)
+			// 	turn(computerMove())
+			// 	// setTimeout(() => turn(computerMove()), 500)
+			// 	// setTimeout(() => gameOver = false, 500)
+			// 	return
+			// }
+		} else {board[7].turn = 1}
+		return
+	}
+	gameOver = true
+	colorinfo = ['Red', "Blue"]
+	calculator.setExpression(
+		{
+		latex: '(0, 6.5)',
+		label: `${colorinfo[board[7].turn-1]} wins!`,
+		hidden: true,
+		showLabel: true,
+		color: colors[board[7].turn-1]
+	}
+	)
+}
+
+function compturn() {
+	if (computerGame && board[7].turn == 2) {
+		turn(computerMove())
+	}
+}
+
+var simboard
+function computerMove() {
+	for (var i = 0; i < 7; i++) {
+		simboard = JSON.parse(JSON.stringify(board))
+		
+		simboard = moveSim(i, simboard, 2)
+		if (simboard == false) {continue}
+		if (checkSim(2, simboard) != false) {
+			console.log("Winning with", i)
+			return i
+			}
+		}
+
+	
+	for (var i = 0; i < 7; i++) {
+		simboard = JSON.parse(JSON.stringify(board))
+
+		simboard = moveSim(i, simboard, 1)
+		if (simboard == false) {continue}
+		if (checkSim(1, simboard) != false) {
+			console.log("Blocking with", i)
+			return i
+		}
+	}
+
+	let random = Math.floor(Math.random() * 7)
+	console.log("Random", random)
+	return random
+}
+
+
+// function winBox(conditions) {
+// 	equations = []
+// 	var xs = [-6, -4, -2, 0, 2, 4, 6]
+// 	var ys = [-5, -3, -1, 1, 3, 5]
+// 	var x = xs[conditions.column]
+// 	var y = ys[conditions.row]
+// 	if (conditions.type == "horizontal") {
+// 		equations = [[[`y=${y-0.15}`], ], [[`y=${x+2.15}`]], [[`x=${}`]]]
+// 	}
+// }
+
+// function placePiece() {
+//     calculator.setExpression({id: "test", latex: "(x--6)^2+(y-k)^2<=0.8", color: red})
+// 	var k = 7;
+// 	for (var i = 1; i<100; i++) {
+// 		k -= 0.1;
+// 	    calculator.setExpression({id: "test", latex: `(x--6)^2+(y-${k})^2<=0.8`, color: red})
+// 	}
+// 	calculator.setExpression({id: "slider", latex: "k=7", sliderBounds: {min: -5, max: 7}})
+// }
+
+
+
+
+document.onkeydown = checkKey;
+function checkKey(e) {
+
+	if (gameOver == true) {return}
+	
+	e = e || window.event;
+
+	if (e.keyCode == '49') {
+		turn(0)
+	} else if (e.keyCode == '50') {
+		turn(1)
+	} else if (e.keyCode == '51') {
+		turn(2)
+	} else if (e.keyCode == '52') {
+		turn(3)
+	} else if (e.keyCode == '53') {
+		turn(4)
+	} else if (e.keyCode == '54') {
+		turn(5)
+	} else if (e.keyCode == '55') {
+		turn(6)
+	}
+
+
+	else if (e.keyCode == '82') {
+		placePiece()
+	}
+
+
+}
+
+    graphDecorations()
+    // placePiece()
+  </script>
+  
+</body>
+</html>
