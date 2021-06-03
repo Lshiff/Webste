@@ -51,13 +51,7 @@ var opts = {
 
 var elt = document.getElementById('calculator');
 var calculator = Desmos.GraphingCalculator(elt, opts);
-// calculator.setMathBounds({ //sets the camera position
 
-// 	left: -132,
-// 	right: 132,
-// 	bottom: -62,
-// 	top: 62
-// })
 var blue = "#2d70b3"
 var red = "#c74440"
 var colors = ["#c74440","#2d70b3"]
@@ -68,8 +62,6 @@ var graph = [
 	['y=-60', '-60<x<60'],
 	['x=60', '-60<y<60'],
 	['x=-060', '-60<y<60'],
-    
-
 ]
 
 var labels = [-6, -4, -2, 0, 2, 4, 6]
@@ -85,14 +77,12 @@ for (var i = -6; i<7; i+=2) {
 function graphDecorations() {
 	var color;
 	for (var i = 0; i<graph.length; i++) {
-        //console.log("currently setting expression", graph[i])
 		calculator.setExpression({
 			latex: `${graph[i][0]}\\{${graph[i][1]}\\}`,
 			color: graph[i][2]
 		})
 	}
 	for (var i = 0; i < 7; i++) {
-		//console.log(i)
 		calculator.setExpression({
 			latex: `(${labels[i]}, -6.5)`,
 			label: `${i+1}`,
@@ -180,8 +170,6 @@ function checkWin(player) {
 	for (var diag = 0; diag < 6; diag++) {
 		for (var piece = 0; piece <= pieces[diag]; piece++) {
 			for (var add = 0; add < 4; add++) {
-				//console.log(diags[diag]-piece-add, ys[diag]+add+piece )
-				//console.log(diags[diag]-piece-add, ys[diag]+add+piece, board[diags[diag]-piece-add][ys[diag]+add+piece] )
 				count ++
 				if (board[diags[diag]-piece-add][ys[diag]+add+piece] != player) {
 					break
@@ -192,12 +180,9 @@ function checkWin(player) {
 			}
 		}
 	}
-	//console.log("diag2")
 	for (var diag = 0; diag < 6; diag++) {
 		for (var piece = 0; piece <= pieces[diag]; piece++) {
 			for (var add = 0; add < 4; add++) {
-				//console.log("Diag:", diag, "Piece:", piece, "Add:", add)
-				//console.log(diags1[diag]+piece+add, ys[diag]+add+piece, board[diags1[diag]+piece+add][ys[diag]+add+piece] )
 				count ++
 				if (board[diags1[diag]+piece+add][ys[diag]+add+piece] != player) {
 					break
@@ -239,12 +224,9 @@ function checkSim(player, simboard) {
 	const diags = [3, 4, 5, 6, 6, 6]
 	const diags1 = [3, 2, 1, 0, 0, 0]
 	let count = 0
-	//console.log("checking...")
 	for (var diag = 0; diag < 6; diag++) {
 		for (var piece = 0; piece <= pieces[diag]; piece++) {
 			for (var add = 0; add < 4; add++) {
-				//console.log(diags[diag]-piece-add, ys[diag]+add+piece )
-				//console.log(diags[diag]-piece-add, ys[diag]+add+piece, simboard[diags[diag]-piece-add][ys[diag]+add+piece] )
 				count ++
 				if (simboard[diags[diag]-piece-add][ys[diag]+add+piece] != player) {
 					break
@@ -255,12 +237,9 @@ function checkSim(player, simboard) {
 			}
 		}
 	}
-	//console.log("diag2")
 	for (var diag = 0; diag < 6; diag++) {
 		for (var piece = 0; piece <= pieces[diag]; piece++) {
 			for (var add = 0; add < 4; add++) {
-				//console.log("Diag:", diag, "Piece:", piece, "Add:", add)
-				//console.log(diags1[diag]+piece+add, ys[diag]+add+piece, simboard[diags1[diag]+piece+add][ys[diag]+add+piece] )
 				count ++
 				if (simboard[diags1[diag]+piece+add][ys[diag]+add+piece] != player) {
 					break
@@ -301,7 +280,6 @@ function turn(num) {
 		return
 	}
 	win = checkWin(board[7].turn)
-	//console.log(win)
 	if (win == false) {
 		if (checkTie()) {alert("It's a tie!")}
 		//changes turn
@@ -309,14 +287,6 @@ function turn(num) {
 			board[7].turn = 2
 			compturn()
 			return
-			// if (computerGame) {
-			// 	// gameOver = true
-			// 	console.log("from turn", board)
-			// 	turn(computerMove())
-			// 	// setTimeout(() => turn(computerMove()), 500)
-			// 	// setTimeout(() => gameOver = false, 500)
-			// 	return
-			// }
 		} else {board[7].turn = 1}
 		return
 	}
@@ -381,22 +351,18 @@ function computerMove() {
 	console.log("Random", random)
 	if (blacklist.includes(random)) {
 		if (blacklist.length == 7) {return random}
-		console.log("Never mind, not going there!")
 
 		while (blacklist.includes(random)) {
 			random = Math.floor(Math.random() *	7)
 		}
 	}
 	if (board[random].includes(0)) {
-		console.log("It's gucci")
 		return random
 	}
 	else {
-		console.log("working on it")
 		while (!board[random].includes(0)) {
 			random = Math.floor(Math.random() *	7)
 		}
-		console.log("lets try", random)
 		return random
 	}
 }
@@ -412,18 +378,6 @@ function computerMove() {
 // 		equations = [[[`y=${y-0.15}`], ], [[`y=${x+2.15}`]], [[`x=${}`]]]
 // 	}
 // }
-
-// function placePiece() {
-//     calculator.setExpression({id: "test", latex: "(x--6)^2+(y-k)^2<=0.8", color: red})
-// 	var k = 7;
-// 	for (var i = 1; i<100; i++) {
-// 		k -= 0.1;
-// 	    calculator.setExpression({id: "test", latex: `(x--6)^2+(y-${k})^2<=0.8`, color: red})
-// 	}
-// 	calculator.setExpression({id: "slider", latex: "k=7", sliderBounds: {min: -5, max: 7}})
-// }
-
-
 
 
 document.onkeydown = checkKey;
