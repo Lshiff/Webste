@@ -101,11 +101,26 @@ function graphDecorations() {
 			showLabel: true
 		})
 	}
+	calculator.setExpression({
+		id: "top",
+		latex:'(0, 6.5)',
+		label: "Use numbers 1-7 to play pieces (and r to reset)!",
+		color: black,
+		hidden: true,
+		showLabel: true
+	})
 }
 
 var board = [[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], {turn: 1, count: 0}]
 var gameOver = false
 var computerGame = true
+
+function reset() {
+	board = [[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], {turn: 1, count: 0}]
+	gameOver = false
+	calculator.setState(state)
+}
+
 
 function move(num) {
 	for (var i = 0; i<=6; i++) {
@@ -113,9 +128,10 @@ function move(num) {
 			board[num][i] = board[7].turn 
 			board[7].count += 1 //Increments turn count
 			placePiece(num, i)
-			break
+			return
 		}
 	}
+	return false
 }
 
 function placePiece(column, row) {
@@ -268,11 +284,27 @@ function moveSim(num, input, player) {
 	return false
 }
 
+function checkTie() {
+	for (var i = 0; i<7; i++) {
+		if (board[i].includes(0)) {return false}
+	}
+	return true
+}
+
 function turn(num) {
-	move(num)
+	console.log(checkTie())
+	if (checkTie() == true) {
+		console.log("checktie is", checkTie())
+		// alert("It's a tieddddd!"
+	}
+	if (move(num) == false) {
+		alert("Can't go there!")
+		return
+	}
 	win = checkWin(board[7].turn)
 	//console.log(win)
 	if (win == false) {
+		if (checkTie) {alert("It's a tie!")}
 		//changes turn
 		if (board[7].turn == 1) {
 			board[7].turn = 2
@@ -293,6 +325,7 @@ function turn(num) {
 	colorinfo = ['Red', "Blue"]
 	calculator.setExpression(
 		{
+		id: "top",
 		latex: '(0, 6.5)',
 		label: `${colorinfo[board[7].turn-1]} wins!`,
 		hidden: true,
@@ -332,10 +365,37 @@ function computerMove() {
 			return i
 		}
 	}
+	let blacklist = []
+	for (var i = 0; i < 7; i++) {
+		simboard = JSON.parse(JSON.stringify(board))
+		simboard = moveSim(i, simboard, 2)
+		if (simboard == false) {continue}
+		simboard = moveSim(i, simboard, 1)
+		if (simboard == false) {continue}
+		if (checkSim(1, simboard) != false) {
+			console.log("Adding", i, "to blacklist")
+			blacklist.push(i)
+		}
+	}
 
 	let random = Math.floor(Math.random() * 7)
 	console.log("Random", random)
-	return random
+	if (blacklist.includes(random)) {
+		if (blacklist.length == 7) {return random}
+		console.log("Never mind, not going there!")
+
+		while (blacklist.includes(random)) {
+			random = Math.floor(Math.random() *	7)
+		}
+	}
+	if (board[random].includes(0)) {
+		return random
+	}
+	else {
+		while (!board[random].includes(0)) {
+			random = Math.floor(Math.random() *	7)
+		}
+	}
 }
 
 
@@ -365,6 +425,10 @@ function computerMove() {
 
 document.onkeydown = checkKey;
 function checkKey(e) {
+	if (e.keyCode == '82') {
+		reset()
+	}
+
 
 	if (gameOver == true) {return}
 	
@@ -387,15 +451,11 @@ function checkKey(e) {
 	}
 
 
-	else if (e.keyCode == '82') {
-		placePiece()
-	}
-
 
 }
 
     graphDecorations()
-    // placePiece()
+	var state = calculator.getState()
   </script>
   
 </body>
