@@ -1,0 +1,371 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+
+	<style>
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+		}
+		#calculator {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://www.desmos.com/api/v1.5/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+</head>
+<body>
+  <div id="calculator"></div>
+  <script >
+
+//make game end and reset
+
+
+var i = 0
+var x = 0
+var y = 0
+var numbers = {}
+var testopts = {
+	'settingsMenu': true,
+	'expressions': false,
+	'zoomButtons': true,
+	'lockViewport': false,
+	'showGrid': false,
+	'showXAxis': true,
+	'showYAxis': true,
+};
+
+var opts = {
+	'settingsMenu': true,
+	'expressions': false,
+	'zoomButtons': true,
+	'lockViewport': false,
+	'showGrid': false,
+	'showXAxis': false,
+	'showYAxis': false,
+	'showResetButtonOnGraphpaper': true,
+	'pointsOfInterest': false,
+	'trace': false,
+	'invertedColors': false,
+};
+
+
+var elt = document.getElementById('calculator');
+var calculator = Desmos.GraphingCalculator(elt, opts);
+// calculator.setMathBounds({ //sets the camera position
+
+// 	left: -132,
+// 	right: 132,
+// 	bottom: -62,
+// 	top: 62
+// })
+
+var black = '#000000'
+var blue = '#3471eb'
+
+var board = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+var boardpositions = [[-46, -22, 2, 26],[26, 2, -22, -46]]
+
+var Testboard = false
+var TheTestBoard = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+for  (var i = 0; i<16; i++) {
+	TheTestBoard[i] = 512
+}
+
+calculator.setExpressions([
+	{
+		latex: '(0, 55)',
+		label: 'Welcome to 2048 by Lior!',
+		hidden: true,
+		showLabel: true,
+		color: black
+	},
+	{
+		latex: '(0, 51)',
+		label: "Use Arrow Keys to move and 'r' to reset",
+		hidden: true,
+		showLabel: true,
+		color: black
+	},
+])
+
+
+
+var graph = [
+	['y=60', '-60<x<60', black],
+	['y=-60', '-60<x<60'],
+	['x=60', '-60<y<60'],
+	['x=-060', '-60<y<60']
+
+]
+
+var moving = {
+	left: [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]],
+	right: [[3, 2, 1, 0], [7, 6, 5, 4], [11, 10, 9, 8], [15, 14, 13, 12]],
+	up: [[0, 4, 8, 12], [1, 5, 9, 13], [2, 6, 10, 14], [3, 7, 11, 15]],
+	down: [[12, 8, 4, 0], [13, 9, 5, 1], [14, 10, 6, 2], [15, 11, 7, 3]]
+}
+
+Object.size = function(obj) {
+	var size = 0, key;
+	for (key in obj) {
+		if (obj.hasOwnProperty(key)) size++;
+	}
+	return  size
+}
+
+function defineNumbers() {
+	numbers = {
+	n0: {
+		num: ['', '', '', '', '', '', '', '', '', ''],
+		color: '#cdc1b4',
+	},
+
+	n2: {
+		num: [`(x-${x+10})^2+(y-${y+14})^2=4^2\\{y>${y+14}\\}`, `y=1.5(x-${x+14})+${y+14}\\{${x+6}<x<${x+14}\\}`, `y=${y+2}\\{${x+6}<x<${x+14}\\}`, '', '', '', '', '', '', ''],
+		color: '#eee4da',
+		numcolor: '#776E65'
+	},
+	n4: {
+		num: [`x=${x+13}\\{${y}<y<${y+17}\\}`,
+			  `y=${y+7}\\{${x+5}<x<${x+15}\\}`, 
+			  `y=1.25(x-${x+5})+${y+7}\\{${x+5}<x<${x+13}\\}`,
+			   '', '', '', '', '', '', ''],
+		color: '#eee1c9',
+		numcolor: '#776E65'
+	},
+	n8: {
+		num: [`((x-${x+10})^2)/(1.2^2)+(y-${y+13})^2=3^2`,
+		      `((x-${x+10})^2)/(1.2^2)+(y-${y+7.2})^2=3^2`,
+		       '', '', '', '', '', '', '', ''],
+		color: '#F3B27A'
+	},
+	n16: {
+		num: [`x=${x+6}\\{${y+4}<y<${y+16}\\}`,
+			  `(x-${x+12.5})^2+(y-${y+7})^2=3^2`, 
+			  `y=-.7(x-${x+13})^2+${y+16}\\{x<${x+12.5}\\}\\{y>${y+8}\\}`,
+			   '', '', '', '', '', '', ''],
+		color: '#F69664'
+	},
+	n32: {
+		num: [`((x-${x+5})^2)/(1.2^2)+((y-${y+12.7})^2/.6)=3^2\\{x>${x+5}\\}`, 
+			  `((x-${x+5})^2)/(1.2^2)+((y-${y+8})^2/.6)=3^2\\{x>${x+5}\\}`, 
+			  `(x-${x+15})^2+(y-${y+12.5})^2=2.7^2\\{y>${y+12.5}\\}`, 
+			  `y=1.297(x-${x+17.7})+${y+12.5}\\{${x+12.3}<x<${x+17.7}\\}`, 
+			  `y=${y+5.5}\\{${x+12.3}<x<${x+17.7}\\}`, '', '', '', '', ''],
+		color: '#F77C5F'
+	},
+	n64: {
+		num: [`(x-${x+6.5})^2+(y-${y+7})^2=3^2`, 
+			  `y=-.7(x-${x+7})^2+${y+16}\\{x<${x+6.5}\\}\\{y>${y+8}\\}`,
+			  `x=${x+16}\\{${y+4}<y<${y+17}\\}`, 
+			  `y=${y+6}\\{${x+11}<x<${x+17.6}\\}`, 
+			  `y=11/5(x-${x+11})+${y+6}\\{${x+11}<x<${x+16}\\}`, '', '', '', '', ''],
+		color: '#F75F3B'
+	},
+	n128: {
+		num: [`x=${x+4}\\{${y+5}<y<${y+16}\\}`,
+			  `(x-${x+9})^2+(y-${y+12.5})^2=2.5^2\\{y>${y+12.5}\\}`,
+			  `y=7/5(x-${x+6.5})+${y+5.5}\\{${x+6.5}<x<${x+11.5}\\}`,
+			  `y=${y+5.5}\\{${x+6.5}<x<${x+11.5}\\}`,
+			  `(x-${x+16})^2/1.2^2+(y-${y+12.5})^2=2.55^2`,
+			  `(x-${x+16})^2/1.2^2+(y-${y+7.5})^2=2.55^2`, '', '', '', '', ''],
+		color: '#EDD073',
+	},
+	n256: {
+		num: [`(x-${x+4.5})^2+(y-${y+12.5})^2=2.5^2\\{y>${y+12.5}\\}`,
+			  `y=7/5(x-${x+2})+${y+5.5}\\{${x+2}<x<${x+7}\\}`,
+			  `y=${y+5.5}\\{${x+2}<x<${x+6.5}\\}`,
+			  `y=${y+15}\\{${x+8}<x<${x+12}\\}`,
+			  `x=${x+8}\\{${y+10}<y<${y+15}\\}`,
+			  `(x-${x+8})^2+(y-${y+7.5})^2/.6^2=4^2\\{x>${x+8}\\}`,
+			  `(x-${x+15.5})^2+(y-${y+7.5})^2=2.7^2`,
+			  `y=-.8(x-${x+16})^2+${y+16}\\{x<${x+15.5}\\}\\{y>${y+8}\\}`, '', '', '', '', ''],
+		color: '#EDCC62'
+	},
+	n512: {
+		num: [`x=${x+9}\\{${y+5}<y<${y+15}\\}`,
+		 	  `y=${y+15}\\{${x+2}<x<${x+6}\\}`,
+		 	  `x=${x+2}\\{${y+10}<y<${y+15}\\}`,
+		 	  `(x-${x+2})^2+(y-${y+7.5})^2/.6^2=4^2\\{x>${x+2}\\}`,
+		 	  `(x-${x+14.5})^2+(y-${y+12.5})^2=2.5^2\\{y>${y+12.5}\\}`,
+		 	  `y=7/5(x-${x+12})+${y+5.5}\\{${x+12}<x<${x+17}\\}`,
+		 	  `y=${y+5.5}\\{${x+12}<x<${x+16.5}\\}`, '', '', '', '', ''],
+		color: '#EDC851'
+	},
+	n1024: {
+		num: ['', '', '', '', '', '', '', '', '', ''],
+		color: '#34b1eb',
+	},
+	n2048: {
+		num: ['', '', '', '', '', '', '', '', '', ''],
+		color: '#eb3474',
+	},
+	n4096: {
+		num: ['', '', '', '', '', '', '', '', '', ''],
+		color: '#49eb34',
+	},
+
+
+}
+
+}
+
+function toStr(num) {return `n${String(num)}`}
+
+
+function makeBoard() {
+
+	for (var i = 0; i<16; i++) {
+		x = boardpositions[0][(i % 4)]
+		y = boardpositions[1][Math.floor(i/4)]
+		var b = toStr(board[i])
+		defineNumbers()
+		calculator.setExpressions([
+			{
+				id: `square${i}`,
+				latex: `${x+20}>=x>=${x}\\{${y+20}>y>${y}\\}`,
+				color: numbers[b].color,
+				// fillOpacity: 1
+			},
+			{
+				id: `line1${i}`,
+				latex: `y=${y}\\{${x}<x<${x+20}\\}`,
+				color: numbers[b].color
+			},
+			{
+				id: `line2${i}`,
+				latex: `y=${y+20}\\{${x}<x<${x+20}\\}`,
+				color: numbers[b].color
+			}
+		])
+		for (var j = 0; j<numbers[b].num.length; j++) {
+			calculator.setExpression({
+				id: `num${j}${i}`,
+				latex: numbers[b].num[j],
+				color: black //numbers[b].numcolor
+			})
+			
+		}
+ 	}
+
+}
+
+
+
+
+function graphDecorations() {
+	var color;
+	for (var i = 0; i<graph.length; i++) {
+		calculator.setExpression({
+			latex: `${graph[i][0]}\\{${graph[i][1]}\\}`,
+			color: graph[i][2]
+		})
+	}
+}
+
+
+function checkFull() {
+	var counter = 0
+	for (var i = 0; i<16; i++) {
+		if (board[i] == 0) {return false}
+	}
+	return false
+}
+
+function newBlock() {
+	if (checkFull()) {console.log("full"); return}
+	check = Math.floor(Math.random() * 17)
+	while (board[check] != 0) {check = Math.floor(Math.random() * 17)} //finds an emtpy square
+
+	if (Math.floor(Math.random() * 10) == 0) {board[check] = 4}
+	else {board[check] = 2} //Gives it a 1/10 chance to get 4, otherwise 2
+}
+
+
+function move(direction) {
+	var makenew = false
+	for (var i = 0; i<4; i++) {
+		for (var j = 0; j<4; j++) {
+		var cancombine = true
+			if (board[direction[i][j]] == 0) {continue}
+			for (var k = 1; k<4-j; k++) {
+				if ((board[direction[i][j+k]] != 0) && (board[direction[i][j]] != board[direction[i][j+k]])) {cancombine = false; continue}
+				if (board[direction[i][j]] == board[direction[i][j+k]] && cancombine == true) {
+				board[direction[i][j]] = 2*board[direction[i][j]]
+				board[direction[i][j+k]] = 0
+				makenew = true
+				break //so it can't combine twice on one time
+				}
+			}
+			for (var l = j-1; l>=0; l--) {
+				if (board[direction[i][l]] == 0) {
+					console.log(board[direction[i][l]],board[direction[i][j]])
+					board[direction[i][l]] = board[direction[i][j]]
+					board[direction[i][j]] = 0
+					j--
+					makenew = true
+				}
+			}
+		}
+	}
+	if (makenew) {newBlock()}
+	makeBoard()
+}
+
+
+function reset() {
+	board = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	newBlock()
+	newBlock()
+	makeBoard()
+}
+
+newBlock()
+newBlock()
+if (Testboard) {board = TheTestBoard}
+makeBoard()
+graphDecorations()
+
+
+
+document.onkeydown = checkKey;
+function checkKey(e) {
+	e = e || window.event;
+
+	if (e.keyCode == '38') {
+		move(moving.up)
+	}
+	else if (e.keyCode == '40') {
+		move(moving.down)
+	}
+
+	else if (e.keyCode == '37') {
+		move(moving.left)
+	}
+
+	else if (e.keyCode == '39') {
+		move(moving.right)
+	}
+
+	else if (e.keyCode == '82') {
+		reset()
+	}
+
+
+}
+
+
+
+  </script>
+  
+</body>
+</html>
